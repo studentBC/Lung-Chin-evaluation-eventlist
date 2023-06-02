@@ -12,8 +12,8 @@ const API = (function () {
     const res = await fetch(`${API_URL}`);
     return await res.json();
   };
-  const putTodo = async (oldTodo) => {
-    const res = await fetch(`${API_URL}/${oldTodo.id}`, {
+  const putTodo = async (oldTodo, id) => {
+    const res = await fetch(`${API_URL}/${id}`, {
       method: "PUT",
       headers: {
         "content-type": "application/json; charset=utf-8",
@@ -54,166 +54,235 @@ const API = (function () {
   };
 })();
 
-class TodoModel {
-  #todos = [];
-  constructor() {}
-  getTodos() {
-    return this.#todos;
-  }
-  async fetchTodos() {
-    this.#todos = await API.getTodos();
-  }
-  async addTodo(newTodo) {
-    console.log("---- addTodo ----");
-    console.log(newTodo);
-    const todo = await API.postTodo(newTodo);
-    this.#todos.push(todo);
-    console.log(todo);
-    return todo;
-  }
-  async updateTodo(updateTodo) {
-    const todo = await API.putTodo(updateTodo);
-    console.log("---- TodoModel ----");
-    console.log(todo)
-    for (let i = 0; i < this.#todos.length; i++) {
-      if (this.#todos[i].id == todo.id) {
-        this.#todos[i].title = todo.title;
-        break;
-      }
-    }
+// class TodoModel {
+//   #todos = [];
+//   constructor() {}
+//   getTodos() {
+//     return this.#todos;
+//   }
+//   async fetchTodos() {
+//     this.#todos = await API.getTodos();
+//   }
+//   async addTodo(newTodo) {
+//     console.log("---- addTodo ----");
+//     console.log(newTodo);
+//     const todo = await API.postTodo(newTodo);
+//     this.#todos.push(todo);
+//     console.log(todo);
+//     return todo;
+//   }
+//   async updateTodo(updateTodo) {
+//     const todo = await API.putTodo(updateTodo);
+//     console.log("---- TodoModel ----");
+//     console.log(todo)
+//     for (let i = 0; i < this.#todos.length; i++) {
+//       if (this.#todos[i].id == todo.id) {
+//         this.#todos[i].title = todo.title;
+//         break;
+//       }
+//     }
     
-    return todo 
-  }
-  async removeTodo(id) {
-    const removedId = await API.deleteTodo(id);
-    this.#todos = this.#todos.filter((todo) => todo.id !== id);
-    return removedId;
-  }
-}
+//     return todo 
+//   }
+//   async removeTodo(id) {
+//     const removedId = await API.deleteTodo(id);
+//     this.#todos = this.#todos.filter((todo) => todo.id !== id);
+//     return removedId;
+//   }
+// }
 
-class TodoView {
-  constructor() {
-    this.form = document.querySelector(".todo-app__form");
-    // this.addBtn = document.querySelector(".todo-app__add-btn");
-    this.input = document.getElementById("todo-app__input");
-    this.todolist = document.querySelector(".todolist");
-  }
+// class TodoView {
+//   constructor() {
+//     this.tb = document.getElementById("todotbody");
+//   }
 
-  initRenderTodos(todos) {
-    this.todolist.innerHTML = "";
-    todos.forEach((todo) => {
-      console.log(todo);
-      this.appendTodo(todo);
-    });
-  }
-  updateTodo(todo) {
-    console.log("==== updateTodo =====");
-    console.log(todo);
-    document.getElementById(`todo__textbox${todo.id}`).value="";
-    document.getElementById(`todo__textbox${todo.id}`).placeholder = todo.title;
-  }
-  removeTodo(id) {
-    const element = document.getElementById(`todo-${id}`);
-    element.remove();
-  }
+//   initRenderTodos(todos) {
+//     this.todolist.innerHTML = "";
+//     todos.forEach((todo) => {
+//       console.log(todo);
+//       this.appendTodo(todo);
+//     });
+//   }
+//   updateTodo(todo) {
+//     console.log("==== updateTodo =====");
+//     console.log(todo);
+//     document.getElementById(`todo__textbox${todo.id}`).value="";
+//     document.getElementById(`todo__textbox${todo.id}`).placeholder = todo.title;
+//   }
+//   removeTodo(id) {
+//     const element = document.getElementById(`todo-${id}`);
+//     element.remove();
+//   }
 
-  appendTodo(todo) {
-    const todoElem = this.createTodoElem(todo);
-    this.todolist.append(todoElem);
-  }
+//   appendTodo(todo) {
+//     const todoElem = this.createTodoElem(todo);
+//     this.todolist.append(todoElem);
+//   }
 
-  createTodoElem(todo) {
-    const todoElem = document.createElement("div");
-    todoElem.classList.add("todo");
-    todoElem.setAttribute("id", `todo-${todo.id}`);
+//   createTodoElem(todo) {
+//     const todoElem = document.createElement("div");
+//     todoElem.classList.add("todo");
+//     todoElem.setAttribute("id", `todo-${todo.id}`);
 
-    const title = document.createElement("input");
-    title.type="text";
-    title.classList.add("title");
-    title.id = "todo__textbox"+todo.id;
-    title.placeholder = todo.title;
-    const deleteBtn = document.createElement("button");
-    deleteBtn.classList.add("todo__delete-btn");
-    deleteBtn.setAttribute("remove-id", todo.id);
-    deleteBtn.textContent = "delete";
-    //edit button
-    const editBtn = document.createElement("button");
-    editBtn.classList.add("todo__update-btn");
-    editBtn.setAttribute("update-id", todo.id);
-    editBtn.textContent = "update";
+//     const title = document.createElement("input");
+//     title.type="text";
+//     title.classList.add("title");
+//     title.id = "todo__textbox"+todo.id;
+//     title.placeholder = todo.title;
+//     const deleteBtn = document.createElement("button");
+//     deleteBtn.classList.add("todo__delete-btn");
+//     deleteBtn.setAttribute("remove-id", todo.id);
+//     deleteBtn.textContent = "delete";
+//     //edit button
+//     const editBtn = document.createElement("button");
+//     editBtn.classList.add("todo__update-btn");
+//     editBtn.setAttribute("update-id", todo.id);
+//     editBtn.textContent = "update";
 
-    todoElem.append(title, deleteBtn, editBtn);
-    return todoElem;
-  }
-}
+//     todoElem.append(title, deleteBtn, editBtn);
+//     return todoElem;
+//   }
+// }
 
-class TodoController {
-  constructor(model, view) {
-    this.model = model;
-    this.view = view;
-    this.init();
-  }
+// class TodoController {
+//   constructor(model, view) {
+//     this.model = model;
+//     this.view = view;
+//     this.init();
+//   }
 
-  async init() {
-    this.setUpEvents();
-    await this.model.fetchTodos();
-    this.view.initRenderTodos(this.model.getTodos());
-  }
+//   async init() {
+//     this.setUpEvents();
+//     await this.model.fetchTodos();
+//     this.view.initRenderTodos(this.model.getTodos());
+//   }
 
-  setUpEvents() {
-    this.setUpAddEvent();
-    this.setUpDeleteEvent();
-    this.setUpdateEvent();
-  }
-  setUpAddEvent() {
-    this.view.form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const title = this.view.input.value;
-      this.model
-        .addTodo({
-          title,
-          completed: false,
-        })
-        .then((todo) => {
-          this.view.appendTodo(todo);
-        });
-    });
-  }
-  setUpDeleteEvent() {
-    this.view.todolist.addEventListener("click", (e) => {
-      const isDeleteBtn = e.target.classList.contains("todo__delete-btn");
-      if (isDeleteBtn) {
-        const removeId = e.target.getAttribute("remove-id");
-        this.model.removeTodo(removeId).then(() => {
-          this.view.removeTodo(removeId);
-        });
-      }
-    });
-  }
-  setUpdateEvent() {
-    this.view.todolist.addEventListener("click", (e) => {
-      const isUpdateBtn = e.target.classList.contains("todo__update-btn");
+//   setUpEvents() {
+//     this.setUpAddEvent();
+//     this.setUpDeleteEvent();
+//     this.setUpdateEvent();
+//   }
+//   setUpAddEvent() {
+//     this.view.form.addEventListener("submit", (e) => {
+//       e.preventDefault();
+//       const title = this.view.input.value;
+//       this.model
+//         .addTodo({
+//           title,
+//           completed: false,
+//         })
+//         .then((todo) => {
+//           this.view.appendTodo(todo);
+//         });
+//     });
+//   }
+//   setUpDeleteEvent() {
+//     this.view.todolist.addEventListener("click", (e) => {
+//       const isDeleteBtn = e.target.classList.contains("todo__delete-btn");
+//       if (isDeleteBtn) {
+//         const removeId = e.target.getAttribute("remove-id");
+//         this.model.removeTodo(removeId).then(() => {
+//           this.view.removeTodo(removeId);
+//         });
+//       }
+//     });
+//   }
+//   setUpdateEvent() {
+//     this.view.todolist.addEventListener("click", (e) => {
+//       const isUpdateBtn = e.target.classList.contains("todo__update-btn");
       
-      if (isUpdateBtn) {
-        const updateId = e.target.getAttribute("update-id");
-        console.log("---- setUpdateEvent ----");
-        console.log(document.getElementById("todo__textbox"+updateId).value )
-        const obj={
-          "id": updateId,
-          "title" : document.getElementById("todo__textbox"+updateId).value 
-        }
-        this.model.updateTodo(obj).then((x) => {
-          this.view.updateTodo(x);
-        });
-      }
-    });
-  }
-}
+//       if (isUpdateBtn) {
+//         const updateId = e.target.getAttribute("update-id");
+//         console.log("---- setUpdateEvent ----");
+//         console.log(document.getElementById("todo__textbox"+updateId).value )
+//         const obj={
+//           "id": updateId,
+//           "title" : document.getElementById("todo__textbox"+updateId).value 
+//         }
+//         this.model.updateTodo(obj).then((x) => {
+//           this.view.updateTodo(x);
+//         });
+//       }
+//     });
+//   }
+// }
 
 // const model = new TodoModel();
 // const view = new TodoView();
 // const controller = new TodoController(model, view);
 
+//initialize table
+
+
+async function init() {
+  let events = await API.getTodos();
+
+
+
+let tbdy = document.getElementById("todotbody");
+tbdy.innerHTML = "";
+for (let i = 0; i < events.length; i++) {
+  const row = document.createElement('tr');
+  row.setAttribute('rstatus', 1);
+  row.classList.add("tableRow");
+
+  const four = document.createElement('td');
+  four.innerText = events[i].eventName;
+  four.classList.add("one");
+  
+  const one = document.createElement('td');
+  one.innerText = events[i].startDate;
+  one.classList.add("two");
+  
+  const two = document.createElement('td');
+  two.innerText = events[i].endDate;
+  two.classList.add("three");
+
+  const three = document.createElement('td');
+  const ebut = document.createElement('button');
+  ebut.innerHTML = pen;
+  ebut.classList.add("edBut");
+  
+  
+  const debut = document.createElement('button');
+  debut.innerHTML = transhCan;
+  debut.classList.add("delBut");
+  debut.addEventListener('click', function() {
+    calcelEdit(row);
+  });
+  ebut.addEventListener('click', function() {
+    turnSave(row);
+  });
+  
+  three.appendChild(ebut);
+  three.appendChild(debut);
+  
+  row.appendChild(four);
+  row.appendChild(one);
+  row.appendChild(two);
+  row.appendChild(three);
+  
+  tbdy.appendChild(row);
+}
+}
+async function saveToServer(eve, std, end) {
+    await API.postTodo({
+      "eventName": eve,
+      "startDate": std,
+      "endDate": end,
+    });
+}
+async function changeServer(eve, std, end, id) {
+  await API.putTodo({
+    "eventName": eve,
+    "startDate": std,
+    "endDate": end,
+  }, id);
+}
+async function delDB(id) {
+  const removedId = await API.deleteTodo(id);
+}
+init();
 
 //o = + 1 = save 2 = pen
 function calcelEdit(tr) {
@@ -241,11 +310,30 @@ function calcelEdit(tr) {
       edBut.innerHTML = pen;
       delBut.innerHTML = transhCan;
       tr.setAttribute('rstatus', 1);
+      //make UI uneditable
+      const std = tr.querySelectorAll('.std')[0];
+      const end = tr.querySelectorAll('.end')[0];
+      const title = tr.querySelectorAll('.title')[0];
+      one = tr.querySelectorAll('.one')[0];
+      two = tr.querySelectorAll('.two')[0];
+      three = tr.querySelectorAll('.three')[0];
+      one.innerHTML = title.value;
+      two.innerHTML = std.value;
+      three.innerHTML = end.value;
+
 
     } else { //delete that row
-      tbody.removeChild(tr);
+      
       //send delete request
-
+      const rows = document.getElementById("todotbody").getElementsByTagName('tr');
+      for (let i = 0; i < rows.length; i++) {
+        if (rows[i] == tr) {
+          console.log("we delete " + i + " th row ");
+          delDB(i+1);
+          break;
+        }
+      }
+      tbody.removeChild(tr);
       
     }
 }
@@ -266,15 +354,78 @@ function turnSave(tr) {
     edBut.innerHTML = pen
     delBut.innerHTML = transhCan
     status = 1;
+
+    //send post
+    const std = tr.querySelectorAll('.std')[0];
+    const end = tr.querySelectorAll('.end')[0];
+    const title = tr.querySelectorAll('.title')[0];
+    one = tr.querySelectorAll('.one')[0];
+    two = tr.querySelectorAll('.two')[0];
+    three = tr.querySelectorAll('.three')[0];
+    one.innerHTML = title.value;
+    two.innerHTML = std.value;
+    three.innerHTML = end.value;
+    
+    saveToServer(title.value, std.value, end.value);
   } else if (status == 1) {
     edBut.innerHTML = save
     delBut.innerHTML = cancel
     status = 2;
+    console.log(" ###### ");
+    //change UI to editable
+    one = tr.querySelectorAll('.one')[0];
+    two = tr.querySelectorAll('.two')[0];
+    three = tr.querySelectorAll('.three')[0];
+    const title = document.createElement('input');
+    title.type="text";
+    title.value = one.innerText;
+    title.classList.add("title");
+    one.innerHTML = "";
+    one.appendChild(title);
+
+    const std = document.createElement('input');
+    std.type="date";
+    std.value = two.innerText;
+    std.classList.add("std");
+    two.innerHTML = "";
+    two.appendChild(std);
+
+    const end = document.createElement('input');
+    end.type="date";
+    end.value = three.innerText;
+    end.classList.add("end");
+    three.innerHTML = "";
+    three.appendChild(end);
   } else {
     edBut.innerHTML = pen
     delBut.innerHTML = transhCan
-    //send put request
+    
+      //make UI uneditable
+      const std = tr.querySelectorAll('.std')[0];
+      const end = tr.querySelectorAll('.end')[0];
+      const title = tr.querySelectorAll('.title')[0];
+      one = tr.querySelectorAll('.one')[0];
+      two = tr.querySelectorAll('.two')[0];
+      three = tr.querySelectorAll('.three')[0];
+      one.innerHTML = title.value;
+      two.innerHTML = std.value;
+      three.innerHTML = end.value;
+
+    //send put request to change db
     status = 1;
+    //need to know which th row
+
+    const rows = document.getElementById("todotbody").getElementsByTagName('tr');
+    for (let i = 0; i < rows.length; i++) {
+      if (rows[i] == tr) {
+        console.log("we got " + i + " th row ");
+        changeServer(title.value, std.value, end.value, i+1);
+        return;
+      }
+    }
+
+    
+    //
   }
   tr.setAttribute('rstatus', status);
 }
@@ -286,17 +437,23 @@ function addEvent() {
   const four = document.createElement('td');
   const title = document.createElement('input');
   title.type="text";
+  title.classList.add("title");
   four.appendChild(title);
+  four.classList.add("one");
 
   const one = document.createElement('td');
   const dd = document.createElement('input')
-  dd.type="date"
+  dd.type="date";
+  dd.classList.add("std");
   one.appendChild(dd);
+  one.classList.add("two");
 
   const two = document.createElement('td');
   const d = document.createElement('input')
-  d.type="date"
+  d.type="date";
+  d.classList.add("end");
   two.appendChild(d);
+  two.classList.add("three");
 
   const three = document.createElement('td');
   const ebut = document.createElement('button');
