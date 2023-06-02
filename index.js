@@ -413,6 +413,7 @@ function turnSave(tr) {
 
     //send put request to change db
     status = 1;
+    tr.setAttribute("rstatus", 1);
     //need to know which th row
 
     const rows = document.getElementById("todotbody").getElementsByTagName('tr');
